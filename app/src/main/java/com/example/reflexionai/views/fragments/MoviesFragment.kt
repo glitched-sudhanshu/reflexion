@@ -45,21 +45,26 @@ class MoviesFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupRecyclerView()
 
-        if(mMovieViewModel.movieList.value.isEmpty())mMovieViewModel.loadMovies()
-        viewLifecycleOwner.lifecycleScope.launchWhenCreated {
-            mMovieViewModel.movieList.collect{ movies ->
-                for(item in movies)
-                {
-                    if(item.YouTubeTrailer == null)item.YouTubeTrailer = "";
-                    mMovieViewModel.getIsLikedOrNot(item.IMDBID).observe(viewLifecycleOwner) { isLiked ->
-                        if (isLiked != null && isLiked==true) {
-                            item.isLiked = true
-                        }
+        if(mMovieViewModel.movieList.value.isEmpty()) {
+            mMovieViewModel.loadMovies()
+
+            viewLifecycleOwner.lifecycleScope.launchWhenCreated {
+                mMovieViewModel.movieList.collect { movies ->
+                    for (item in movies) {
+                        if (item.YouTubeTrailer == null) item.YouTubeTrailer = "";
+                        mMovieViewModel.getIsLikedOrNot(item.IMDBID)
+                            .observe(viewLifecycleOwner) { isLiked ->
+                                if (isLiked != null) {
+                                    item.isLiked = isLiked
+                                }
+                            }
+                        mMovieViewModel.insert(item)
                     }
-                    mMovieViewModel.insert(item)
+                    populateRecyclerView()
                 }
-                populateRecyclerView()
             }
+        }else{
+            populateRecyclerView()
         }
 
 //        populateRecyclerView()
@@ -74,6 +79,8 @@ class MoviesFragment : Fragment() {
 //        }
 
     }
+
+
 
     private fun populateRecyclerView() {
         mMovieViewModel.allMoviesList.observe(viewLifecycleOwner){
@@ -106,9 +113,10 @@ class MoviesFragment : Fragment() {
 
 
     private fun toggleLikedMovie(movie: Movie){
-//        Toast.makeText(requireContext(), "Asdfsadf", Toast.LENGTH_SHORT).show()
+        Toast.makeText(requireContext(), "Asdfsadf", Toast.LENGTH_SHORT).show()
         mMovieViewModel.update(movie)
         populateRecyclerView()
+//        movieAdapter.submit()
 //        mMovieViewModel.allMoviesList.
 //        val sharedPreferences = requireContext().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
 //        val editor = sharedPreferences.edit()
