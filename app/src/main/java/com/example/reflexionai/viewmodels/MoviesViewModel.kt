@@ -73,17 +73,20 @@ class MoviesViewModel(private val repository: MovieRepository) : ViewModel() {
                     2 -> MoviesListApiService.api.getMoviesList2()
                     else -> return@launch
                 }
-            } catch (e: IOException) {
+            }
+            catch (e: IOException) {
                 _isLoading.value = false
-                Log.e(ContentValues.TAG, "onCreate:  ${e.printStackTrace()}")
+                Log.e(TAG, "onCreate:  ${e.printStackTrace()}")
                 return@launch
-            } catch (e: HttpRetryException) {
+            }
+            catch (e: HttpRetryException) {
                 _isLoading.value = false
-                Log.e(ContentValues.TAG, "onCreate:  ${e.printStackTrace()}")
+                Log.e(TAG, "onCreate:  ${e.printStackTrace()}")
                 return@launch
-            } catch (e: Exception) {
+            }
+            catch (e: Exception) {
                 _isLoading.value = false
-                Log.e(ContentValues.TAG, "onCreate:  ${e.printStackTrace()}")
+                Log.e(TAG, "onCreate:  ${e.printStackTrace()}")
                 return@launch
             }
             Log.d(TAG, "loadMovies: called")
@@ -92,7 +95,7 @@ class MoviesViewModel(private val repository: MovieRepository) : ViewModel() {
                 val currentList = _movieList.value ?: emptyList()
                 _movieList.value = currentList + newMovies
             } else {
-                Log.d(ContentValues.TAG, "Response not successful")
+                Log.d(TAG, "Response not successful")
             }
             _isLoading.value = false
         }

@@ -20,9 +20,6 @@ class UserLogin : AppCompatActivity() {
         mBinding = ActivityUserLoginBinding.inflate(layoutInflater)
         setContentView(mBinding.root)
 
-        val intent = Intent(this, MainActivity::class.java)
-        startActivity(intent)
-
         val sharedPreferences = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
         var profileJson = sharedPreferences.getString("profile", null)
 

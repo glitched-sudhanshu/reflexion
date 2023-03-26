@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -27,6 +28,7 @@ class MoviesFragment : Fragment() {
     private val mMovieViewModel: MoviesViewModel by viewModels {
         MoviesViewModelFactory((requireActivity().application as MoviesApplication).repository)
     }
+    private var _countOfMovies = 0;
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -39,72 +41,87 @@ class MoviesFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupRecyclerView()
 
-        var countOfMovies = 0;
 
-        mMovieViewModel.countOfMovies.observe(viewLifecycleOwner) {
-            countOfMovies = it
-        }
-
-        if (countOfMovies == 0) {
-            mMovieViewModel.loadMovies()
-
-            viewLifecycleOwner.lifecycleScope.launchWhenCreated {
-                mMovieViewModel.movieList.collect { movies ->
-                    for (item in movies) {
-                        if (item.YouTubeTrailer == null) item.YouTubeTrailer = "";
-                        mMovieViewModel.getIsLikedOrNot(item.IMDBID)
-                            .observe(viewLifecycleOwner) { isLiked ->
-                                if (isLiked != null) {
-                                    item.isLiked = isLiked
-                                }
-                            }
-                        mMovieViewModel.insert(item)
-                    }
-                    populateRecyclerView()
-                }
+        mMovieViewModel.countOfMovies.observe(viewLifecycleOwner) { countOfMovies ->
+            _countOfMovies = countOfMovies
+            if (countOfMovies == 0) {
+                mMovieViewModel.loadMovies()
+                populateApiData()
+            } else {
+                populateRecyclerView()
             }
-        } else {
-            populateRecyclerView()
         }
+
+
+        setupRecyclerView()
     }
 
 
     private fun populateRecyclerView() {
-        mMovieViewModel.allMoviesList.observe(viewLifecycleOwner) {
-            Log.d(TAG, "populateRecyclerView: ${it.size}")
-            _movieList = it as MutableList<Movie>
-            movieAdapter.submit(it)
+        mMovieViewModel.allMoviesList.observe(viewLifecycleOwner) { movies ->
+            Log.d(TAG, "populateRecyclerView: ${movies.size}")
+            _movieList = movies.toMutableList()
+            movieAdapter.submit(_movieList)
+        }
+    }
+
+    private fun populateApiData() {
+        viewLifecycleOwner.lifecycleScope.launchWhenCreated {
+            mMovieViewModel.movieList.collect { movies ->
+                for (item in movies) {
+                    if (item.YouTubeTrailer == null) item.YouTubeTrailer = ""
+                    mMovieViewModel.getIsLikedOrNot(item.IMDBID)
+                        .observe(viewLifecycleOwner) { isLiked ->
+                            if (isLiked != null) {
+                                item.isLiked = isLiked
+                            }
+                            mMovieViewModel.insert(item)
+                        }
+                }
+                populateRecyclerView()
+            }
         }
     }
 
 
     private fun setupRecyclerView() = mBinding?.recyclerView?.apply {
 
-        mMovieViewModel.allMoviesList.observe(viewLifecycleOwner){
-            _movieList = it as MutableList<Movie>
+        mMovieViewModel.allMoviesList.observe(viewLifecycleOwner) { movies ->
+            _movieList = movies.toMutableList()
         }
         movieAdapter = MoviesListAdapter(_movieList, this@MoviesFragment, ::toggleLikedMovie)
         adapter = movieAdapter
         layoutManager = LinearLayoutManager(requireContext())
 
-        addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-                val lastVisibleItemPosition =
-                    (layoutManager as LinearLayoutManager).findLastCompletelyVisibleItemPosition()
-                val totalItemCount = movieAdapter.itemCount
+//        Toast.makeText(requireContext(), "$_countOfMovies", Toast.LENGTH_SHORT).show()
+//        if(_countOfMovies!=0) {
+            addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    super.onScrolled(recyclerView, dx, dy)
+                    val lastVisibleItemPosition =
+                        (layoutManager as LinearLayoutManager).findLastCompletelyVisibleItemPosition()
+                    val totalItemCount = movieAdapter.itemCount
 
-                if (lastVisibleItemPosition == totalItemCount - 1) {
-                    mMovieViewModel.incrementPageNumber()
+                    if (lastVisibleItemPosition == totalItemCount - 1) {
+                        if (mMovieViewModel.pageNumber.value == 1) {
+                            mMovieViewModel.incrementPageNumber()
+                            populateApiData()
+                        }
+
+                    }
                 }
-            }
-        })
+            })
+//        }
     }
 
     private fun toggleLikedMovie(movie: Movie) {
         mMovieViewModel.update(movie)
         populateRecyclerView()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        mBinding?.recyclerView?.clearOnScrollListeners()
     }
 }
