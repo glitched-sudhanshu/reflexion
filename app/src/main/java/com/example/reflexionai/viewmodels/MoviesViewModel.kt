@@ -31,6 +31,10 @@ class MoviesViewModel(private val repository: MovieRepository) : ViewModel() {
 
     val allMoviesList : LiveData<List<Movie>> = repository.allMoviesList.asLiveData()
 
+    val countOfMovies : LiveData<Int> = repository.countOfMovies.asLiveData()
+
+    val allLikedMovies : LiveData<List<Movie>> = repository.allLikedMovies.asLiveData()
+
     init {
 //        loadMovies()
     }

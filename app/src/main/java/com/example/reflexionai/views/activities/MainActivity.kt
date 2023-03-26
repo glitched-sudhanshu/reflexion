@@ -34,9 +34,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var mBinding: ActivityMainBinding
     private lateinit var mNavController: NavController
-//    private val mMovieViewModel: MoviesViewModel by viewModels {
-//        MoviesViewModelFactory((application as MoviesApplication).repository)
-//    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,20 +52,6 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(mNavController, appBarConfiguration)
         NavigationUI.setupActionBarWithNavController(this, mNavController)
         mBinding.bottomNavigationView.setupWithNavController(mNavController)
-
-
-//        lifecycleScope.launchWhenCreated {
-//            mMovieViewModel.loadMovies()
-//        }
-//        lifecycleScope.launchWhenCreated {
-//            mMovieViewModel.movieList.collect {
-//                for (item in it) {
-//                    if(item.YouTubeTrailer == null) item.YouTubeTrailer = ""
-//                    mMovieViewModel.insert(item)
-//                }
-//            }
-//        }
-
 
     }
 

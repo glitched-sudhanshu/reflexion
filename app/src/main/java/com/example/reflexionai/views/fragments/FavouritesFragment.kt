@@ -10,18 +10,24 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.reflexionai.application.MoviesApplication
 import com.example.reflexionai.databinding.FragmentFavouritesBinding
+import com.example.reflexionai.models.entities.Movie
 import com.example.reflexionai.viewmodels.MoviesViewModel
 import com.example.reflexionai.viewmodels.MoviesViewModelFactory
+import com.example.reflexionai.views.adapters.MoviesListAdapter
 
 class FavouritesFragment : Fragment() {
 
     private var mBinding : FragmentFavouritesBinding? = null
-
-    private val mFavMovieViewModel: MoviesViewModel by viewModels {
+    private var _movieList = mutableListOf<Movie>()
+    private val mMovieViewModel: MoviesViewModel by viewModels {
         MoviesViewModelFactory((requireActivity().application as MoviesApplication).repository)
     }
+
+    private lateinit var movieAdapter: MoviesListAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -35,33 +41,37 @@ class FavouritesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-//        val sharedPreferences = requireContext().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
-//        var liked = sharedPreferences.getBoolean("movieLast", false)
-//        if(liked){
-//            Toast.makeText(requireContext(), "hogya bc", Toast.LENGTH_SHORT).show()
-//        }
 
-        var text = "";
-        mFavMovieViewModel.allMoviesList.observe(viewLifecycleOwner){
-            movies ->
-            run {
-                movies.let {
-                    Log.d(TAG, "movie SIZE = ${movies.size}")
-                    var cnt = 0;
-                    for (item in it) {
-                        //got our movies
-                        if(item.isLiked) {
-                            cnt++;
-                            text += item.Title
-                        }
-//                        Log.d(TAG, "movie: ${item.Title} is ${item.isLiked}")
-                    }
+        setupRecyclerView()
+    }
 
-                    mBinding?.txtProfile?.text = text
-                    Log.d(TAG, "movies liked= $text")
-                }
-            }
+    override fun onResume() {
+        super.onResume()
+        populateRecyclerView()
+    }
+
+    private fun setupRecyclerView() = mBinding?.rvMovies?.apply {
+
+        mMovieViewModel.allLikedMovies.observe(viewLifecycleOwner){
+            _movieList = it as MutableList<Movie>
+            movieAdapter.submit(it)
         }
+        movieAdapter = MoviesListAdapter(_movieList, this@FavouritesFragment, ::toggleLikedMovie)
+        adapter = movieAdapter
+        layoutManager = LinearLayoutManager(requireContext())
+    }
+
+    private fun populateRecyclerView() {
+        mMovieViewModel.allLikedMovies.observe(viewLifecycleOwner) {
+            Log.d(TAG, "populateRecyclerView: ${it.size}")
+            _movieList = it as MutableList<Movie>
+            movieAdapter.submit(it)
+        }
+    }
+
+    private fun toggleLikedMovie(movie: Movie) {
+        mMovieViewModel.update(movie)
+        populateRecyclerView()
     }
 
 }
