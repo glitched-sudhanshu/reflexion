@@ -1,6 +1,7 @@
 package com.example.reflexionai.viewmodels
 
 import android.content.ContentValues
+import android.content.ContentValues.TAG
 import android.util.Log
 import androidx.lifecycle.*
 import com.example.reflexionai.models.database.MovieRepository
@@ -29,7 +30,7 @@ class MoviesViewModel(private val repository: MovieRepository) : ViewModel() {
     val allMoviesList : LiveData<List<Movie>> = repository.allMoviesList.asLiveData()
 
     init {
-        loadMovies()
+//        loadMovies()
     }
 
     fun incrementPageNumber() {
@@ -44,8 +45,16 @@ class MoviesViewModel(private val repository: MovieRepository) : ViewModel() {
         repository.insertMovieData(movie)
     }
 
+    fun update(movie : Movie) = viewModelScope.launch {
+        repository.updateMovieData(movie)
+    }
 
-    private fun loadMovies() {
+    fun getIsLikedOrNot(id : String) : LiveData<Boolean?> {
+        return repository.getMovieWithId(id).asLiveData()
+    }
+
+
+    fun loadMovies() {
         viewModelScope.launch {
             _isLoading.value = true
             val response: Response<MoviesList> = try {
@@ -67,6 +76,7 @@ class MoviesViewModel(private val repository: MovieRepository) : ViewModel() {
                 Log.e(ContentValues.TAG, "onCreate:  ${e.printStackTrace()}")
                 return@launch
             }
+            Log.d(TAG, "loadMovies: called")
             if (response.isSuccessful && response.body() != null) {
                 val newMovies = response.body()!!.MovieList
                 val currentList = _movieList.value ?: emptyList()

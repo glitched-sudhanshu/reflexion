@@ -8,8 +8,14 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface MoviesDao {
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertLikedMovieDetails(movie: Movie)
+
+//    @Insert(onConflict = OnConflictStrategy.REPLACE)
+//    suspend fun insertFromSecondAPI(movie : Movie)
+
+    @Query("SELECT isLiked FROM $MOVIES_TABLE_NAME WHERE imdbId = :id")
+    fun getMovieFromId(id : String) : Flow<Boolean?>
 
     @Query("SELECT * FROM $MOVIES_TABLE_NAME ORDER BY imdbId")
     fun getAllMovies(): Flow<List<Movie>>

@@ -1,10 +1,14 @@
 package com.example.reflexionai.views.fragments
 
+import android.content.ContentValues.TAG
+import android.content.Context
 import android.os.Bundle
 import android.text.method.MovementMethod
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -24,8 +28,6 @@ class MoviesFragment : Fragment() {
     private var mBinding: FragmentMoviesBinding? = null
     private val movieList = mutableListOf<Movie>()
     private lateinit var movieAdapter: MoviesListAdapter
-
-//    private val mMovieViewModel : MoviesViewModel by viewModels()
     private val mMovieViewModel: MoviesViewModel by viewModels {
         MoviesViewModelFactory((requireActivity().application as MoviesApplication).repository)
     }
@@ -47,22 +49,40 @@ class MoviesFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launchWhenCreated {
             mMovieViewModel.movieList.collect{ movies ->
-
-                movieAdapter.submit(movies)
+//                movieAdapter.submit(movies)
+                for(item in movies)
+                {
+                    if(item.YouTubeTrailer == null)item.YouTubeTrailer = "";
+//                    if (mMovieViewModel.getIsLikedOrNot(item.IMDBID).value!! == true) item.isLiked = true
+                    mMovieViewModel.insert(item)
+                }
+                populateRecyclerView()
             }
         }
 
-        viewLifecycleOwner.lifecycleScope.launchWhenCreated {
-            mMovieViewModel.isLoading.collect{ isLoading ->
-                mBinding?.progressBar?.isVisible = isLoading
-            }
-        }
+//        populateRecyclerView()
+//        mMovieViewModel.allMoviesList.observe(viewLifecycleOwner){
+//            Log.d(TAG, "populateRecyclerView: ${it.size}")
+//            movieAdapter.submit(it)
+//        }
+//        viewLifecycleOwner.lifecycleScope.launchWhenCreated {
+//            mMovieViewModel.isLoading.collect{ isLoading ->
+//                mBinding?.progressBar?.isVisible = isLoading
+//            }
+//        }
 
+    }
+
+    private fun populateRecyclerView() {
+        mMovieViewModel.allMoviesList.observe(viewLifecycleOwner){
+            Log.d(TAG, "populateRecyclerView: ${it.size}")
+            movieAdapter.submit(it)
+        }
     }
 
 
     private fun setupRecyclerView() = mBinding?.recyclerView?.apply {
-        movieAdapter = MoviesListAdapter(movieList, this@MoviesFragment)
+        movieAdapter = MoviesListAdapter(movieList, this@MoviesFragment, ::toggleLikedMovie)
         adapter = movieAdapter
         layoutManager = LinearLayoutManager(requireContext())
 
@@ -82,4 +102,12 @@ class MoviesFragment : Fragment() {
     }
 
 
+    private fun toggleLikedMovie(movie: Movie){
+//        Toast.makeText(requireContext(), "Asdfsadf", Toast.LENGTH_SHORT).show()
+        mMovieViewModel.update(movie)
+//        val sharedPreferences = requireContext().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+//        val editor = sharedPreferences.edit()
+//        editor.putBoolean("movieLast", movie.isLiked)
+//        editor.apply()
+    }
 }
