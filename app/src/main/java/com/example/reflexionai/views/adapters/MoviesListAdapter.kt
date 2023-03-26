@@ -36,6 +36,7 @@ class MoviesListAdapter(private var movies: List<Movie>, private val fragment: F
             .load(Uri.parse(movieItem.MoviePoster))
             .into(holder.moviePoster)
         holder.moviePoster.clipToOutline = true
+        setFavDrawable(movieItem, holder)
         holder.imgFavMovie.setOnClickListener {
             if (movieItem.isLiked) {
                 val drawable = ContextCompat.getDrawable(fragment.requireContext(),
@@ -60,6 +61,18 @@ class MoviesListAdapter(private var movies: List<Movie>, private val fragment: F
         }
     }
 
+    private fun setFavDrawable(movieItem: Movie, holder: MyViewHolder) {
+        var drawable = ContextCompat.getDrawable(fragment.requireContext(),
+        R.drawable.ic_favorite)
+        if(!movieItem.isLiked)
+        {
+            drawable = ContextCompat.getDrawable(fragment.requireContext(),
+                R.drawable.ic_favorite_border)
+        }
+        holder.imgFavMovie.setImageDrawable(drawable)
+    }
+
+
     override fun getItemCount(): Int {
         return movies.size
     }
@@ -69,6 +82,10 @@ class MoviesListAdapter(private var movies: List<Movie>, private val fragment: F
         movies = newList
         notifyDataSetChanged()
     }
+
+//    fun submitItem(position: Int) {
+//
+//    }
 
     inner class MyViewHolder(view: MovieItemBinding) : RecyclerView.ViewHolder(view.root) {
         val itemMovieTitle = view.txtMovieTitle

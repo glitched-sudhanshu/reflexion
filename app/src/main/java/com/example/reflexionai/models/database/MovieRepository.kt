@@ -26,7 +26,7 @@ class MovieRepository(private val moviesDao: MoviesDao) {
 
 //    val movieWithId : Flow<Movie> = suspend fun  moviesDao.getMovieFromId(id)
 
-    fun getMovieWithId(id : String) : Flow<Boolean?>{
+    suspend fun getMovieWithId(id : String) : Boolean?{
         return moviesDao.getMovieFromId(id)
     }
 

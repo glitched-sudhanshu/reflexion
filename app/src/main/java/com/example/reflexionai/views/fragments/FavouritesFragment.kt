@@ -41,14 +41,24 @@ class FavouritesFragment : Fragment() {
 //            Toast.makeText(requireContext(), "hogya bc", Toast.LENGTH_SHORT).show()
 //        }
 
+        var text = "";
         mFavMovieViewModel.allMoviesList.observe(viewLifecycleOwner){
             movies ->
             run {
                 movies.let {
+                    Log.d(TAG, "movie SIZE = ${movies.size}")
+                    var cnt = 0;
                     for (item in it) {
                         //got our movies
-                        Log.d(TAG, "movie: ${item.Title} is ${item.isLiked}")
+                        if(item.isLiked) {
+                            cnt++;
+                            text += item.Title
+                        }
+//                        Log.d(TAG, "movie: ${item.Title} is ${item.isLiked}")
                     }
+
+                    mBinding?.txtProfile?.text = text
+                    Log.d(TAG, "movies liked= $text")
                 }
             }
         }

@@ -8,9 +8,11 @@ import com.example.reflexionai.models.database.MovieRepository
 import com.example.reflexionai.models.entities.Movie
 import com.example.reflexionai.models.entities.MoviesList
 import com.example.reflexionai.models.network.MoviesListApiService
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import retrofit2.Response
 import java.io.IOException
 import java.lang.IllegalArgumentException
@@ -49,10 +51,14 @@ class MoviesViewModel(private val repository: MovieRepository) : ViewModel() {
         repository.updateMovieData(movie)
     }
 
-    fun getIsLikedOrNot(id : String) : LiveData<Boolean?> {
-        return repository.getMovieWithId(id).asLiveData()
+    fun getIsLikedOrNot(id: String): LiveData<Boolean?> {
+        return liveData {
+            val movieIsLiked = withContext(Dispatchers.IO) {
+                repository.getMovieWithId(id)
+            }
+            emit(movieIsLiked)
+        }
     }
-
 
     fun loadMovies() {
         viewModelScope.launch {

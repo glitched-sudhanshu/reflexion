@@ -15,7 +15,7 @@ interface MoviesDao {
 //    suspend fun insertFromSecondAPI(movie : Movie)
 
     @Query("SELECT isLiked FROM $MOVIES_TABLE_NAME WHERE imdbId = :id")
-    fun getMovieFromId(id : String) : Flow<Boolean?>
+    suspend fun getMovieFromId(id : String) : Boolean?
 
     @Query("SELECT * FROM $MOVIES_TABLE_NAME ORDER BY imdbId")
     fun getAllMovies(): Flow<List<Movie>>
