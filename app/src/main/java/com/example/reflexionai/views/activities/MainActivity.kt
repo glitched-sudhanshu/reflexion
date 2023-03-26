@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.TextView
+import androidx.activity.viewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -16,9 +18,13 @@ import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.reflexionai.R
+import com.example.reflexionai.application.MoviesApplication
 import com.example.reflexionai.databinding.ActivityMainBinding
 import com.example.reflexionai.models.entities.MoviesList
 import com.example.reflexionai.models.network.MoviesListApiService
+import com.example.reflexionai.viewmodels.MoviesViewModel
+import com.example.reflexionai.viewmodels.MoviesViewModelFactory
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import retrofit2.Response
 import java.io.IOException
@@ -28,7 +34,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var mBinding: ActivityMainBinding
     private lateinit var mNavController: NavController
-
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,11 +52,6 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(mNavController, appBarConfiguration)
         NavigationUI.setupActionBarWithNavController(this, mNavController)
         mBinding.bottomNavigationView.setupWithNavController(mNavController)
-
-
-
-
-
 
     }
 

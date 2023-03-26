@@ -10,8 +10,10 @@ class MovieRepository(private val moviesDao: MoviesDao) {
     //updating db
     @WorkerThread
     suspend fun insertMovieData(movie: Movie){
-        moviesDao.insertLikedMovieDetails(movie)
+        moviesDao.insertMovieDetails(movie)
     }
+
+
 
     //taking data from db
     val allMoviesList: Flow<List<Movie>> = moviesDao.getAllMovies()
@@ -21,6 +23,15 @@ class MovieRepository(private val moviesDao: MoviesDao) {
     suspend fun updateMovieData(movie: Movie){
         moviesDao.updateLikedMovieDetails(movie)
     }
+
+//    val movieWithId : Flow<Movie> = suspend fun  moviesDao.getMovieFromId(id)
+
+    suspend fun getMovieWithId(id : String) : Boolean?{
+        return moviesDao.getMovieFromId(id)
+    }
+
+    val countOfMovies : Flow<Int> = moviesDao.getRowCount()
+
 
     //taking data from db
     val allLikedMovies  : Flow<List<Movie>> = moviesDao.getLikedMovie()

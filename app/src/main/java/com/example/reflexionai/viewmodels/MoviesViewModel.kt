@@ -1,15 +1,18 @@
 package com.example.reflexionai.viewmodels
 
 import android.content.ContentValues
+import android.content.ContentValues.TAG
 import android.util.Log
 import androidx.lifecycle.*
 import com.example.reflexionai.models.database.MovieRepository
 import com.example.reflexionai.models.entities.Movie
 import com.example.reflexionai.models.entities.MoviesList
 import com.example.reflexionai.models.network.MoviesListApiService
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import retrofit2.Response
 import java.io.IOException
 import java.lang.IllegalArgumentException
@@ -28,8 +31,12 @@ class MoviesViewModel(private val repository: MovieRepository) : ViewModel() {
 
     val allMoviesList : LiveData<List<Movie>> = repository.allMoviesList.asLiveData()
 
+    val countOfMovies : LiveData<Int> = repository.countOfMovies.asLiveData()
+
+    val allLikedMovies : LiveData<List<Movie>> = repository.allLikedMovies.asLiveData()
+
     init {
-        loadMovies()
+//        loadMovies()
     }
 
     fun incrementPageNumber() {
@@ -44,8 +51,20 @@ class MoviesViewModel(private val repository: MovieRepository) : ViewModel() {
         repository.insertMovieData(movie)
     }
 
+    fun update(movie : Movie) = viewModelScope.launch {
+        repository.updateMovieData(movie)
+    }
 
-    private fun loadMovies() {
+    fun getIsLikedOrNot(id: String): LiveData<Boolean?> {
+        return liveData {
+            val movieIsLiked = withContext(Dispatchers.IO) {
+                repository.getMovieWithId(id)
+            }
+            emit(movieIsLiked)
+        }
+    }
+
+    fun loadMovies() {
         viewModelScope.launch {
             _isLoading.value = true
             val response: Response<MoviesList> = try {
@@ -54,25 +73,29 @@ class MoviesViewModel(private val repository: MovieRepository) : ViewModel() {
                     2 -> MoviesListApiService.api.getMoviesList2()
                     else -> return@launch
                 }
-            } catch (e: IOException) {
+            }
+            catch (e: IOException) {
                 _isLoading.value = false
-                Log.e(ContentValues.TAG, "onCreate:  ${e.printStackTrace()}")
-                return@launch
-            } catch (e: HttpRetryException) {
-                _isLoading.value = false
-                Log.e(ContentValues.TAG, "onCreate:  ${e.printStackTrace()}")
-                return@launch
-            } catch (e: Exception) {
-                _isLoading.value = false
-                Log.e(ContentValues.TAG, "onCreate:  ${e.printStackTrace()}")
+                Log.e(TAG, "onCreate:  ${e.printStackTrace()}")
                 return@launch
             }
+            catch (e: HttpRetryException) {
+                _isLoading.value = false
+                Log.e(TAG, "onCreate:  ${e.printStackTrace()}")
+                return@launch
+            }
+            catch (e: Exception) {
+                _isLoading.value = false
+                Log.e(TAG, "onCreate:  ${e.printStackTrace()}")
+                return@launch
+            }
+            Log.d(TAG, "loadMovies: called")
             if (response.isSuccessful && response.body() != null) {
                 val newMovies = response.body()!!.MovieList
                 val currentList = _movieList.value ?: emptyList()
                 _movieList.value = currentList + newMovies
             } else {
-                Log.d(ContentValues.TAG, "Response not successful")
+                Log.d(TAG, "Response not successful")
             }
             _isLoading.value = false
         }

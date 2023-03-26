@@ -16,7 +16,7 @@ import com.example.reflexionai.R
 import com.example.reflexionai.databinding.MovieItemBinding
 import com.example.reflexionai.models.entities.Movie
 
-class MoviesListAdapter(private var movies: List<Movie>, private val fragment: Fragment) :
+class MoviesListAdapter(private var movies: List<Movie>, private val fragment: Fragment, private val toggleLikedMovie : (Movie)-> Unit) :
     RecyclerView.Adapter<MoviesListAdapter.MyViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
@@ -36,30 +36,42 @@ class MoviesListAdapter(private var movies: List<Movie>, private val fragment: F
             .load(Uri.parse(movieItem.MoviePoster))
             .into(holder.moviePoster)
         holder.moviePoster.clipToOutline = true
+        setFavDrawable(movieItem, holder)
         holder.imgFavMovie.setOnClickListener {
             if (movieItem.isLiked) {
                 val drawable = ContextCompat.getDrawable(fragment.requireContext(),
                     R.drawable.ic_favorite_border)
                 holder.imgFavMovie.setImageDrawable(drawable)
                 movieItem.isLiked = false
+                toggleLikedMovie(movieItem)
                 Toast.makeText(fragment.requireContext(), "${movieItem.Title} removed from favourites", Toast.LENGTH_SHORT).show()
             } else {
                 val drawable = ContextCompat.getDrawable(fragment.requireContext(),
                     R.drawable.ic_favorite)
                 holder.imgFavMovie.setImageDrawable(drawable)
                 movieItem.isLiked = true
+                toggleLikedMovie(movieItem)
                 Toast.makeText(fragment.requireContext(), "${movieItem.Title} added to favourites", Toast.LENGTH_SHORT).show()
             }
         }
 
         holder.itemMovieTitle.setOnClickListener {
-
             holder.itemMovieSummary.text = movieItem.ShortSummary
             holder.summaryContainer.isVisible = !holder.summaryContainer.isVisible
-
-
         }
     }
+
+    private fun setFavDrawable(movieItem: Movie, holder: MyViewHolder) {
+        var drawable = ContextCompat.getDrawable(fragment.requireContext(),
+        R.drawable.ic_favorite)
+        if(!movieItem.isLiked)
+        {
+            drawable = ContextCompat.getDrawable(fragment.requireContext(),
+                R.drawable.ic_favorite_border)
+        }
+        holder.imgFavMovie.setImageDrawable(drawable)
+    }
+
 
     override fun getItemCount(): Int {
         return movies.size
@@ -71,6 +83,10 @@ class MoviesListAdapter(private var movies: List<Movie>, private val fragment: F
         notifyDataSetChanged()
     }
 
+//    fun submitItem(position: Int) {
+//
+//    }
+
     inner class MyViewHolder(view: MovieItemBinding) : RecyclerView.ViewHolder(view.root) {
         val itemMovieTitle = view.txtMovieTitle
         val itemMovieYear = view.txtMovieYear
@@ -81,6 +97,11 @@ class MoviesListAdapter(private var movies: List<Movie>, private val fragment: F
         val imgFavMovie = view.imgFavMovie
         val itemMovieSummary = view.txtSummary
         val summaryContainer = view.summaryContainer
-
     }
+
+//    fun movieFavouriteToggle(movie: Movie, toggleLikedMovie: (Movie)->Unit){
+//        imgFavMovie.setOnClickListener {
+//            toggleLikedMovie(movie)
+//        }
+//    }
 }

@@ -39,7 +39,7 @@ data class Movie(
     @ColumnInfo(name = "year") val Year: String,
 
     @SerializedName("YouTube Trailer")
-    @ColumnInfo(name = "youTubeTrailer") val YouTubeTrailer: String,
+    @ColumnInfo(name = "youTubeTrailer") var YouTubeTrailer: String,
 
     @ColumnInfo(name = "isLiked") var isLiked : Boolean = false,
 ): Parcelable
